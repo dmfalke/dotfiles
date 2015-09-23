@@ -1,8 +1,5 @@
-export TERM=xterm-color
 export EDITOR=vim
-
 umask 002
-# set -o vi # set in .inputrc
 
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
@@ -15,8 +12,12 @@ HISTCONTROL=ignoreboth
 shopt -s histappend
 
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000
-HISTFILESIZE=2000
+HISTSIZE=1000000
+HISTFILESIZE=1000000
+HISTTIMEFORMAT='%F %T '
+
+# force commands entered on multiple lines to appear on a single line
+shopt -s cmdhist
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -24,7 +25,7 @@ shopt -s checkwinsize
 
 # If set, the pattern "**" used in a pathname expansion context will
 # match all files and zero or more directories and subdirectories.
-shopt -s globstar
+# shopt -s globstar
 
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
@@ -39,7 +40,8 @@ case "$TERM" in
     xterm-color) color_prompt=yes;;
 esac
 
-PS1='--\n\[\033[01;39m\]\u@\h:\w\[\033[00m\]\n>> '
+# PS1='\[\033[0;33m\]--\[\033[00m\]\n\[\033[0;34m\]\u@\h:\w\[\033[00m\]\n\[\033[0;33m\]❯\[\033[00m\] '
+PS1='\n\[\033[0;34m\]\w\[\033[00m\]\n\[\033[0;33m\]❯\[\033[00m\] '
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
@@ -84,13 +86,24 @@ if [ -f $HOME/.aliases ]; then
     source $HOME/.aliases
 fi
 
+if uname | grep -q Darwin; then
+    alias gvim='mvim'
+fi
+
 function g
 {
-    if uname | grep -q Darwin; then
-        mvim --remote-silent $@
-    else
-        gvim --remote-silent $@
-    fi
+    gvim --remote-silent $@
+}
+
+# svn diff wrapper to use vim
+function svndiff
+{
+    svn diff $@ | vim -R -
+}
+
+function vimfind
+{
+    find . -name $@ -exec vim {} +
 }
 
 # tab competion for hosts in .ssh/config
@@ -102,6 +115,9 @@ fi
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
+[[ -s $HOME/.rvm/scripts/rvm ]] && source $HOME/.rvm/scripts/rvm
+[[ -s $HOME/.nvm/nvm.sh ]]      && source $HOME/.nvm/nvm.sh
+
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
@@ -112,20 +128,29 @@ if [ -f $(brew --prefix)/etc/bash_completion ]; then
     . $(brew --prefix)/etc/bash_completion
 fi
 
-if [ -f $HOME/.rvm/scripts/rvm ]; then
-    source $HOME/.rvm/scripts/rvm
-fi
+. <( npm completion )
 
-export PATH=/usr/local/bin
+export PATH=$HOME/bin
+export PATH=$PATH:$HOME/.rvm/bin
+export PATH=$PATH:/usr/local/bin
 export PATH=$PATH:/usr/local/sbin
-export PATH=$PATH:$HOME/bin
 export PATH=$PATH:/usr/local/share/npm/bin
 export PATH=$PATH:/usr/bin
 export PATH=$PATH:/bin
 export PATH=$PATH:/usr/sbin
 export PATH=$PATH:/sbin
-export PATH=$PATH:$HOME/.rvm/bin
 
 if [ -f $HOME/.bashrc.local ]; then
     source $HOME/.bashrc.local
 fi
+
+if [ -f $HOME/.rvm/scripts/rvm ]; then
+    source $HOME/.rvm/scripts/rvm
+fi
+
+# java vars
+export JAVA_HOME=$(/usr/libexec/java_home)
+export ECLIPSE_HOME=$HOME/eclipse
+
+# ruby lib
+export RUBYLIB=$HOME/lib/ruby
