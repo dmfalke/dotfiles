@@ -32,48 +32,53 @@ shopt -s checkwinsize
 
 # set variable identifying the chroot you work in (used in the prompt below)
 if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
+  debian_chroot=$(cat /etc/debian_chroot)
 fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
-    xterm-color) color_prompt=yes;;
+  xterm-color) color_prompt=yes;;
 esac
 
 # PS1='\[\033[0;33m\]--\[\033[00m\]\n\[\033[0;34m\]\u@\h:\w\[\033[00m\]\n\[\033[0;33m\]❯\[\033[00m\] '
-PS1='\n\[\033[0;34m\]\w\[\033[00m\]\n\[\033[0;33m\]❯\[\033[00m\] '
+
+# color prompt
+# PS1='\n\[\033[0;34m\]\w\[\033[00m\]\n\[\033[0;33m\]❯\[\033[00m\] '
+
+# b&w prompt
+PS1='\[\e[1;30m\]\n\w\n❯ \[\e[0m\]'
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
-xterm*|rxvt*)
+  xterm*|rxvt*)
     PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
     ;;
-*)
+  *)
     ;;
 esac
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
-xterm*|rxvt*)
+  xterm*|rxvt*)
     PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD/$HOME/~}\007"'
     ;;
-screen*)
+  screen*)
     PROMPT_COMMAND='echo -ne "\033k$HOSTNAME\033\\"'
     ;;
-*)
+  *)
     ;;
 esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    #alias dir='dir --color=auto'
-    #alias vdir='vdir --color=auto'
+  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+  alias ls='ls --color=auto'
+  #alias dir='dir --color=auto'
+  #alias vdir='vdir --color=auto'
 
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
 fi
 
 # some more ls aliases
@@ -83,32 +88,34 @@ alias la='ls -A'
 alias l='ls -CF'
 
 if [ -f $HOME/.aliases ]; then
-    source $HOME/.aliases
+  source $HOME/.aliases
 fi
 
 if uname | grep -q Darwin; then
-    alias gvim='mvim'
+  alias gvim='mvim'
 fi
 
 function g
 {
-    gvim --remote-silent $@
+  gvim --remote-silent $@
 }
 
-# svn diff wrapper to use vim
-function svndiff
-{
-    svn diff $@ | vim -R -
+svn() {
+  if [[ ( x"$1" == xdiff  || x"$1" == xdi ) && ( -t 1 ) ]]; then
+    $(which svn) "$@" | colordiff | less -RFX
+  else
+    $(which svn) "$@"
+  fi
 }
 
 function vimfind
 {
-    find . -name $@ -exec vim {} +
+  find . -name $@ -exec vim {} +
 }
 
 # tab competion for hosts in .ssh/config
 if [ -f $HOME/.ssh/config ]; then
-    complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
+  complete -o default -o nospace -W "$(/usr/bin/env ruby -ne 'puts $_.split(/[,\s]+/)[1..-1].reject{|host| host.match(/\*|\?/)} if $_.match(/^\s*Host\s+/);' < $HOME/.ssh/config)" scp sftp ssh
 fi
 
 # Add an "alert" alias for long running commands.  Use like so:
@@ -122,16 +129,17 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    . /etc/bash_completion
+  . /etc/bash_completion
 fi
 if [ -f $(brew --prefix)/etc/bash_completion ]; then
-    . $(brew --prefix)/etc/bash_completion
+  . $(brew --prefix)/etc/bash_completion
 fi
 
 . <( npm completion )
 
 export PATH=$HOME/bin
-export PATH=$PATH:$HOME/.rvm/bin
+export PATH=$PATH:$HOME/.cabal/bin
+export PATH=$PATH:/usr/local/opt/coreutils/libexec/gnubin
 export PATH=$PATH:/usr/local/bin
 export PATH=$PATH:/usr/local/sbin
 export PATH=$PATH:/usr/local/share/npm/bin
@@ -139,18 +147,17 @@ export PATH=$PATH:/usr/bin
 export PATH=$PATH:/bin
 export PATH=$PATH:/usr/sbin
 export PATH=$PATH:/sbin
+export PATH=$PATH:$HOME/.rvm/bin
+export PATH=$PATH:$JAVA_HOME/bin
 
-if [ -f $HOME/.bashrc.local ]; then
-    source $HOME/.bashrc.local
+if [ -f $PWD/.bashrc.local ]; then
+  source $PWD/.bashrc.local
 fi
 
-if [ -f $HOME/.rvm/scripts/rvm ]; then
-    source $HOME/.rvm/scripts/rvm
+if [ -f $PWD/.env.local ]; then
+  source $PWD/.env.local
 fi
 
 # java vars
 export JAVA_HOME=$(/usr/libexec/java_home)
 export ECLIPSE_HOME=$HOME/eclipse
-
-# ruby lib
-export RUBYLIB=$HOME/lib/ruby
