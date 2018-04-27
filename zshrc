@@ -5,6 +5,8 @@ unsetopt correct
 setopt extended_glob
 bindkey "^R" history-incremental-search-backward
 
+source secrets
+
 # Customize to your needs...
 # export PATH=/usr/local/bin:/usr/local/sbin:/Users/dfalke/bin:/usr/local/share/npm/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/dfalke/.rvm/bin:/Users/dfalke/.rvm/bin
 export EDITOR=vim
@@ -19,8 +21,6 @@ export ECLIPSE_HOME=$HOME/eclipse
 
 # ruby lib
 export RUBYLIB=$HOME/lib/ruby
-
-export HOMEBREW_GITHUB_API_TOKEN=57ffaabda5178033323e72e8b7993085299e4eaa
 
 # Customize to your needs...
 # export PATH=/usr/local/bin:/usr/local/sbin:/Users/dfalke/bin:/usr/local/share/npm/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/dfalke/.rvm/bin:/Users/dfalke/.rvm/bin
